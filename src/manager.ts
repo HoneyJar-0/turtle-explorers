@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { Direction, Turtle } from './turtle';
 import { TurtleInfo } from './types';
 import * as conf from './resources/config.json'
+import assert from 'assert';
 
 export class Manager extends EventEmitter{
     private turtleDB:JsonDB; //stores turtle ids and the dimension, chunk, coordinates, and direction the turtles are in
@@ -125,12 +126,18 @@ export class Manager extends EventEmitter{
      * - modified function to use turtleInfo instances rather than tuples
      * - made the method public and async
      */
-	public async getTurtle(turtle: Turtle) {
-		const dataPath = `/turtles/${turtle.id}`;
-		if (await this.turtleDB.exists(dataPath)){
-            return this.turtleDB.getData(dataPath);
+	public async getTurtle(turtle: Turtle): Promise<TurtleInfo | null>{
+        try{
+            const dataPath = `/turtles/${turtle.id}`;
+            /**
+             * To address poor documentation on node-json-db's end:
+             * getData() eventually either returns a Promise<any>, or an error. By default, it will NOT create the data entry.
+             * Therefore, we can handle both the promise and the error here to avoid pesky typing issues
+             */
+            let data:TurtleInfo = await this.turtleDB.getData(dataPath);
+            return data;
         }
-		else{
+        catch(error){
             return null;
         }
 	}

@@ -61,8 +61,8 @@ export class Turtle extends EventEmitter {
 				await this.exec(`os.setComputerLabel("${this.label}")`);
 			}
 			this.id = await this.exec<number>('os.getComputerID()');
-			const turtInf:TurtleInfo = this.manager.getTurtle(this);
-			if(turtInf == null){
+			const turtInf:TurtleInfo = await this.manager.getTurtle(this);
+			if(turtInf === null){
 				this.x = 0;
 				this.y = 0;
 				this.z = 0;

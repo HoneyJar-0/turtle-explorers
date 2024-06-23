@@ -3,7 +3,7 @@ import React, { createContext, Dispatch, SetStateAction, useEffect, useState } f
 import TurtlePage from '../components/Turtle';
 import { EventEmitter } from 'events';
 import WorldRenderer from '../components/World';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/material';
 
 const useStyles = makeStyles(() => ({
 	root: {

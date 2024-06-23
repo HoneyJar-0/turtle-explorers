@@ -1,24 +1,24 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { Turtle, BlockDirection } from '../pages';
-import Button from '@material-ui/core/Button';
-import ButtonGroup, { ButtonGroupProps } from '@material-ui/core/ButtonGroup';
-import ArrowDownward from '@material-ui/icons/ArrowDownward';
-import ArrowUpward from '@material-ui/icons/ArrowUpward';
-import CircularProgress, { CircularProgressProps } from '@material-ui/core/CircularProgress';
-import Box from '@material-ui/core/Box';
-import Typography from '@material-ui/core/Typography';
-import { MuiThemeProvider, createMuiTheme, makeStyles } from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import ButtonGroup, { ButtonGroupProps } from '@mui/material/ButtonGroup';
+import ArrowDownward from '@mui/icons-material/ArrowDownward';
+import ArrowUpward from '@mui/icons-material/ArrowUpward';
+import CircularProgress, { CircularProgressProps } from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { ThemeProvider, makeStyles } from '@mui/material/styles';
 import Inventory from './Inventory';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import SvgIcon from '@material-ui/core/SvgIcon';
-import IconButton from '@material-ui/core/IconButton';
-import DialogActions from '@material-ui/core/DialogActions/DialogActions';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SvgIcon from '@mui/material/SvgIcon';
+import IconButton from '@mui/material/IconButton';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
 import TurtleSwitcher from './TurtleSwitcher';
-import { DialogContentText } from '@material-ui/core';
+import { DialogContentText } from '@mui/material';
 
 export interface TurtlePageProps {
 	turtle: Turtle;
@@ -183,9 +183,9 @@ function ColoredButtonGroup({ groupColor, ...props }: { groupColor: string } & B
 		},
 	}), [groupColor]);
 	return (
-		<MuiThemeProvider theme={theme}>
+		<ThemeProvider theme={theme}>
 			<ButtonGroup {...props} />
-		</MuiThemeProvider >
+		</ThemeProvider >
 	);
 
 }

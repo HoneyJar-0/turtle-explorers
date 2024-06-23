@@ -1,12 +1,12 @@
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
-import makeStyles from '@material-ui/core/styles/makeStyles';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/material/styles/makeStyles';
 import React, { useState } from 'react';
 import { Turtle } from '../pages';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { hashCode } from './World';
 import Color from 'color';
 

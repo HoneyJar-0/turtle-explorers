@@ -1,3 +1,9 @@
+# URGENT!!!
+- replace package: three
+    - vulnerable to DOS attacks
+    - note: renderer is changing anyway so this should not be much of an issue
+    - used in: /frontend/components/world.tsx
+
 # TODO
 - Pathfinding
 - Move items in inventory

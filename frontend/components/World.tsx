@@ -1,12 +1,12 @@
 import { Canvas, MeshProps, extend, useFrame, useThree, ReactThreeFiber, useLoader } from 'react-three-fiber';
 import { useRef, useState, useMemo, useEffect, Suspense, HTMLProps, RefObject, SetStateAction, Dispatch, useContext } from 'react';
-import { Mesh, BoxBufferGeometry, Vector3, Quaternion, Euler, Raycaster, Vector2, Object3D } from 'three';
+import { Mesh, BoxBufferGeometry, Vector3, Quaternion, Euler, Raycaster, Vector2, Object3D } from 'three'; //TODO: REPLACE
 import { OrbitControls } from 'three-orbitcontrols-ts';
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Turtle, TurtleContext, World } from '../pages';
 import useEventListener from '@use-it/event-listener';
 import Color from 'color';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 
 extend({ OrbitControls });
 declare global {

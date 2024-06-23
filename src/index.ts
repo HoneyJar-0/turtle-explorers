@@ -4,12 +4,18 @@ import { resolve } from 'path';
 import { Turtle } from './turtle';
 import World from './world';
 import Queue from 'p-queue';
-import config from './resources/config.json'
+import * as config from './resources/config.json'
+import * as names from './resources/names.json'
+import {Config} from './interfaces'
+import WorldManager from './worldManager'
 
 const wss = new Server({ port: 5757 });
 
 let app: App;
 let turtles: { [id: number]: Turtle } = {};
+
+const configData: Config = config as Config //config data
+const worldManager = new WorldManager(configData);
 
 const world = new World();
 const queue = new Queue({ concurrency: 1 });

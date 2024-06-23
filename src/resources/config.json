@@ -1,5 +1,6 @@
 {
     "naming_scheme":"stars",
     "generalize_modded_blocks": false,
-    "constant_moving":false
+    "constant_moving":false,
+    "chunk_size": 16
 }

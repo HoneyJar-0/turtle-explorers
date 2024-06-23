@@ -3,7 +3,6 @@ import { EventEmitter } from 'events';
 import { Direction, Turtle } from './turtle';
 import { TurtleInfo } from './types';
 import * as conf from './resources/config.json'
-import assert from 'assert';
 
 export class Manager extends EventEmitter{
     private turtleDB:JsonDB; //stores turtle ids and the dimension, chunk, coordinates, and direction the turtles are in

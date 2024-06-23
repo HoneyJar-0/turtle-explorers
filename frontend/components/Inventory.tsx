@@ -1,42 +1,16 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/system/Unstable_Grid';
 import Paper from '@mui/material/Paper';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/material/styles/makeStyles';
 import React, { useState } from 'react';
 import { Turtle } from '../pages';
 import Typography from '@mui/material/Typography';
 import { hashCode } from './World';
 import Color from 'color';
-
-const useStyles = makeStyles(() => ({
-
-	inventory: {
-		position: 'absolute',
-		top: 100,
-		left: 0,
-		background: '#252525',
-		height: 200,
-		width: 200,
-		zIndex: 10,
-		borderRadius: 5,
-		overflow: 'hidden'
-	},
-	inventoryItem: {
-		width: '25%',
-		height: '25%',
-		'& .MuiPaper-root': {
-			height: '100%',
-			width: '100%',
-			border: '2px solid transparent',
-			'&.selected': {
-				borderColor: 'white'
-			}
-		},
-		cursor: 'pointer'
-	}
-}));
+import { useStyles } from '../src/themes';
+import theme from '../src/themes'
+import { ThemeProvider } from '@mui/system';
 
 const initialState = {
 	mouseX: null,
@@ -49,7 +23,6 @@ interface InventoryProps {
 }
 
 export default function Inventory({ turtle }: InventoryProps) {
-	const classes = useStyles();
 	const [state, setState] = useState<{
 		mouseX: null | number;
 		mouseY: null | number;
@@ -89,39 +62,41 @@ export default function Inventory({ turtle }: InventoryProps) {
 	}
 
 	return (
-		<Grid container spacing={1} className={classes.inventory}>
-			<Menu
-				keepMounted
-				open={state.mouseY !== null}
-				onClose={handleClose}
-				anchorReference="anchorPosition"
-				anchorPosition={
-					state.mouseY !== null && state.mouseX !== null
-						? { top: state.mouseY, left: state.mouseX }
-						: undefined
+		<ThemeProvider theme={theme}>
+			<Grid container spacing={1} className={useStyles.inventory} >
+				<Menu
+					keepMounted
+					open={state.mouseY !== null}
+					onClose={handleClose}
+					anchorReference="anchorPosition"
+					anchorPosition={
+						state.mouseY !== null && state.mouseX !== null
+							? { top: state.mouseY, left: state.mouseX }
+							: undefined
+					}
+				>
+					{menuItems}
+				</Menu>
+				{
+					turtle.inventory.map((item, i) => (
+						<Grid key={i} xs={3} className={useStyles.inventoryItem}>
+							<Paper onContextMenu={(ev) => handleClick(ev, i + 1)} className={i + 1 === turtle.selectedSlot ? 'selected' : ''} style={{
+								background: item ? Color({
+									h: hashCode(item.name + ':' + item.damage) % 360,
+									s: 60,
+									l: 40
+								}).toString() : undefined
+							}} onClick={() => turtle.selectSlot(i + 1)}>
+								{item &&
+									<Tooltip title={item.name + ':' + item.damage}>
+										<Typography align="center" variant="h4">{item.count}</Typography>
+									</Tooltip>
+								}
+							</Paper>
+						</Grid>
+					))
 				}
-			>
-				{menuItems}
-			</Menu>
-			{
-				turtle.inventory.map((item, i) => (
-					<Grid key={i} item xs={3} className={classes.inventoryItem}>
-						<Paper onContextMenu={(ev) => handleClick(ev, i + 1)} className={i + 1 === turtle.selectedSlot ? 'selected' : ''} style={{
-							background: item ? Color({
-								h: hashCode(item.name + ':' + item.damage) % 360,
-								s: 60,
-								l: 40
-							}).toString() : undefined
-						}} onClick={() => turtle.selectSlot(i + 1)}>
-							{item &&
-								<Tooltip title={item.name + ':' + item.damage}>
-									<Typography align="center" variant="h4">{item.count}</Typography>
-								</Tooltip>
-							}
-						</Paper>
-					</Grid>
-				))
-			}
-		</Grid>
+			</Grid>
+		</ThemeProvider>
 	);
 }

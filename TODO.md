@@ -13,3 +13,6 @@
 - use config file
 - communicate btw. dimensions
 - load chunks by self?
+
+# WARNING
+- Inventory.tsx had "item" before xs entry; may or may not break code?

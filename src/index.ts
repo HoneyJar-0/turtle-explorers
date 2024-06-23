@@ -42,12 +42,12 @@ turtleAddQueue.pause();
 })();
 wss.on('connection', async function connection(ws) {
 	await turtleAddQueue.add(() => {
-		let turtle = new Turtle(ws, world);
+		let turtle = new Turtle(ws, manager);
 		turtle.on('init', async () => {
 			turtles[turtle.id] = turtle;
 			turtle.on('update', () => app.evaluate(`if (window.setTurtles) window.setTurtles(${serializeTurtles()})`));
 			await app.evaluate(`if (window.setTurtles) window.setTurtles(${serializeTurtles()})`)
-			await app.evaluate(`if (window.setWorld) window.setWorld(${JSON.stringify(world.getAllBlocks())})`);
+			await app.evaluate(`if (window.setWorld) window.setWorld(${JSON.stringify(manager.getAllBlocks())})`);
 			ws.on('close', async () => {
 				delete turtles[turtle.id];
 				await app.evaluate(`if (window.setTurtles) window.setTurtles(${serializeTurtles()})`)

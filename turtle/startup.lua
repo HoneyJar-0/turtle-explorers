@@ -605,6 +605,7 @@ function websocketLoop()
 			term.setCursorPos(1,1)
 			print("      {O}\n")
 			print("Pog Turtle OS. Do not read my code unless you are 5Head.")
+            print("Oops, I'm not 5Head, I'm HoneyJar_. L bozo?")
 			local message = ws.receive()
 			if message == nil then
 				break

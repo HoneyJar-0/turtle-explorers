@@ -2,22 +2,16 @@ import { Server } from 'ws';
 import { App, launch } from 'carlo';
 import { resolve } from 'path';
 import { Turtle } from './turtle';
-import World from './world';
 import Queue from 'p-queue';
-import * as config from './resources/config.json'
-import * as names from './resources/names.json'
-import {Config} from './interfaces'
-import WorldManager from './worldManager'
+import { Manager } from './manager'
 
 const wss = new Server({ port: 5757 });
 
 let app: App;
 let turtles: { [id: number]: Turtle } = {};
 
-const configData: Config = config as Config //config data
-const worldManager = new WorldManager(configData);
+const manager = new Manager();
 
-const world = new World();
 const queue = new Queue({ concurrency: 1 });
 const turtleAddQueue = new Queue({ concurrency: 1 });
 turtleAddQueue.pause();
@@ -35,12 +29,12 @@ turtleAddQueue.pause();
 	});
 
 	app.exposeFunction('refreshData', async () => {
-		await app.evaluate(`if (window.setWorld) window.setWorld(${JSON.stringify(world.getAllBlocks())})`);
+		await app.evaluate(`if (window.setWorld) window.setWorld(${JSON.stringify(manager.getAllBlocks())})`);
 		await app.evaluate(`if (window.setTurtles) window.setTurtles(${serializeTurtles()})`);
 	})
 
 	await app.load('http://localhost:3000');
-	world.on('update', async (world) => {
+	manager.on('update', async (world) => {
 		await app.evaluate(`if (window.setWorld) window.setWorld(${JSON.stringify(world)})`);
 	});
 	turtleAddQueue.start();

@@ -167,16 +167,26 @@ export class Manager extends EventEmitter{
 	}
 
     /**
-     * Reports ALL blocks within a specified chunk and dimension
+     * Reports ALL blocks within a specified chunk and dimension.
+     * If no dimID or chunkID is given, this will default to DIM1 0_0 (Overworld, starting chunk)
      * @param dimID name of the dimension of the blocks
      * @param chunkID index of the chunk the blocks are in
      * @returns list[block data]
      * 
      * Notes:
      * - added dimID and chunkID to parameters
+     * - added default handling and overload signitures
      */
-	public getAllBlocks(dimID:string, chunkID:string): { [index: string]: any } {
-        let chunkDB = this.getChunk(dimID, chunkID);
+    public getAllBlocks(): { [index: string]: any }; //Overload
+    public getAllBlocks(dimID:string, chunkID:string): { [index: string]: any }; //Overload
+	public getAllBlocks(dimID?:string, chunkID?:string): { [index: string]: any } {
+        let chunkDB;
+        if(!dimID || !chunkID){ //defaulting
+            chunkDB = this.getChunk("DIM1", "0_0");
+        }
+        else{
+            chunkDB = this.getChunk(dimID, chunkID);
+        }
 		return chunkDB.getData('/blocks');
 	}
 }

@@ -2,6 +2,8 @@ import WebSocket from "ws";
 import { EventEmitter } from 'events';
 import World from "./world";
 import { randomBytes } from 'crypto';
+import * as config from "./resources/config.json"
+import * as nameList from "./resources/names.json"
 
 export enum BlockDirection { FORWARD, UP, DOWN }
 export enum Direction { NORTH, EAST, SOUTH, WEST }
@@ -11,6 +13,13 @@ interface Slot {
 	count: number;
 	name: string;
 	damage: number;
+}
+
+//The following interface is to assert config types to correctly map to names.json
+interface Config{
+	naming_scheme: keyof typeof nameList;
+	generalize_modded_blocks: boolean;
+	constant_moving: boolean;
 }
 
 const nonces = new Set();
@@ -23,7 +32,8 @@ function getNonce(): string {
 	return nonce;
 }
 
-const names = ["Thanatos", "Psyche", "Hades", "Terpsichore", "Thisbe", "Pan", "Pallas", "Doris", "Hestia", "Adrastos", "Sarpedon", "Helios", "Phineus", "Aristodemos", "Iphigeneia", "Halkyone", "Iapetos", "Rheie", "Eudora", "Theseus", "Aristaeus", "Atropos", "Tisiphone", "Chryseis", "Dardanos", "Merope", "Arete", "Cassandra", "Hecate", "Amalthea", "Demophon", "Melissa", "Chloris", "Philander", "Selene", "Pistis", "Pegasus", "Perseus", "Briseis", "Linus", "Aiolos", "Kreios", "Orion", "Praxis", "Okeanos", "Melanthios", "Philomela", "Andromeda", "Klytie", "Achelous", "Alcippe", "Orpheus", "Deianeira", "Ares", "Euterpe", "Zephyr", "Kore", "Poseidon", "Ourania", "Iris", "Euanthe", "Koios", "Hermes", "Thalia", "Xanthe", "Atlas", "Hippolytos", "Daphne", "Hyperion", "Io", "Irene", "Kallisto", "Metis", "Pyrrhus", "Theia", "Damon", "Agaue", "Phobos", "Aeson", "Elpis", "Eros", "Minos", "Aoide", "Medea", "Pythios", "Hebe", "Dione", "Nemesis", "Dionysos", "Lamia", "Nereus", "Niobe", "Herakles", "Tyche", "Eunomia", "Medusa", "Lyssa", "Aglaia", "Athene", "Charon", "Laocoon", "Epimetheus", "Jason", "Delia", "Erato", "Atreus", "Nestor", "Prometheus", "Penelope", "Harmonia", "Priam", "Calypso", "Antiope", "Menelaus", "Endymion", "Nyx", "Eurydice", "Evadne", "Myrto", "Agamemnon", "Dike", "Echo", "Pandora", "Chloe", "Achilles", "Bacchus", "Proteus", "Euphrosyne", "Leto", "Phaenna", "Nike", "Melete", "Asklepios", "Myles", "Paris", "Melpomene", "Nephele", "Polymnia", "Kleio", "Chryses", "Apollo", "Mentor", "Andromache", "Icarus", "Zeus", "Artemis", "Despoina", "Priapus", "Melaina", "Hera", "Diomedes", "Enyo", "Koronis", "Morpheus", "Larisa", "Eos", "Parthenia", "Xanthos", "Semele", "Orestes", "Brontes", "Parthenope", "Ilithyia", "Aphrodite", "Demeter", "Arethusa", "Phrixus", "Hemera", "Leukippos", "Adonis", "Ganymede", "Klotho", "Theano", "Iole", "Notus", "Cassiopea", "Aella", "Themis", "Neilos", "Argus", "Mneme", "Iacchus", "Althea", "Tethys", "Callirrhoe", "Odysseus", "Phyllis", "Antigone", "Melia", "Melite", "Ariadne", "Euryalus", "Uranus", "Eris", "Lachesis", "Alcmene", "Ianthe", "Atalanta", "Helle", "Larissa", "Athena", "Nikephoros", "Rhea", "Phaedra", "Castor", "Deimos", "Kratos", "Boreas", "Mnemosyne", "Hermione", "Kalliope", "Tychon", "Persephone", "Ismene", "Ligeia", "Ione", "Midas", "Anthea"];
+const conf: Config = config as Config
+const names = nameList[conf.naming_scheme]
 
 export class Turtle extends EventEmitter {
 

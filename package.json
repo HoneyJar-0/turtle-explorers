@@ -17,7 +17,6 @@
     "carlo": "^0.9.46",
     "color": "^4.2.3",
     "next": "latest",
-    "ngrok": "^5.0.0-beta.2",
     "node-json-db": "^2.3.0",
     "npm-check-updates": "^16.14.20",
     "p-queue": "^8.0.1",

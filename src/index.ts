@@ -1,10 +1,10 @@
 import { Server } from 'ws';
-// import { connect } from 'ngrok';
 import { App, launch } from 'carlo';
 import { resolve } from 'path';
 import { Turtle } from './turtle';
 import World from './world';
 import Queue from 'p-queue';
+import config from './resources/config.json'
 
 const wss = new Server({ port: 5757 });
 
@@ -17,12 +17,9 @@ const turtleAddQueue = new Queue({ concurrency: 1 });
 turtleAddQueue.pause();
 
 (async () => {
-	// const url = await connect(5757);
-	// console.log(url);
 	app = await launch();
 	app.on('exit', () => process.exit());
 	app.serveFolder(resolve(process.cwd(), "frontend/out"));
-	// app.load('http://localhost:3000');
 
 	app.exposeFunction('exec', async (index: number, func: string, ...args: any[]) => {
 		if (typeof index === 'string') {

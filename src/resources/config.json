@@ -1,5 +1,5 @@
 {
-    "naming-scheme":"stars",
-    "generalize-modded-blocks": false,
-    "constant-moving":false
+    "naming_scheme":"stars",
+    "generalize_modded_blocks": false,
+    "constant_moving":false
 }

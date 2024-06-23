@@ -1,9 +1,11 @@
 import WebSocket from "ws";
 import { EventEmitter } from 'events';
-import World from "./world";
+import { Manager } from "./manager";
 import { randomBytes } from 'crypto';
-import * as config from "./resources/config.json"
-import * as nameList from "./resources/names.json"
+import { Config } from "./interfaces";
+import * as nameList from "./resources/names.json";
+import * as confStuff from "./resources/config.json"
+import { TurtleInfo } from "./types";
 
 export enum BlockDirection { FORWARD, UP, DOWN }
 export enum Direction { NORTH, EAST, SOUTH, WEST }
@@ -13,13 +15,6 @@ interface Slot {
 	count: number;
 	name: string;
 	damage: number;
-}
-
-//The following interface is to assert config types to correctly map to names.json
-interface Config{
-	naming_scheme: keyof typeof nameList;
-	generalize_modded_blocks: boolean;
-	constant_moving: boolean;
 }
 
 const nonces = new Set();
@@ -32,8 +27,8 @@ function getNonce(): string {
 	return nonce;
 }
 
-const conf: Config = config as Config
-const names = nameList[conf.naming_scheme]
+const conf:Config = confStuff as Config; //load in the config for naming schemes
+const names = nameList[conf.naming_scheme] //load naming schemes
 
 export class Turtle extends EventEmitter {
 
@@ -44,28 +39,45 @@ export class Turtle extends EventEmitter {
 	selectedSlot: number = 1;
 	inventory: (Slot | null)[] = [];
 	ws: WebSocket;
-	world: World;
+	manager: Manager;
 	x: number = 0;
 	y: number = 0;
 	z: number = 0;
 	d: Direction = 0;
+	dimID:string = "DIM1";
+	chunkID:string = "0_0";
 	mining: boolean = false;
 
-	constructor(ws: WebSocket, world: World) {
+	constructor(ws: WebSocket, manager: Manager) {
 		super();
-		this.world = world;
+		this.manager = manager;
 		this.ws = ws;
 		this.exec<string>('os.getComputerLabel()').then(async label => {
 			if (label) {
 				this.label = label;
 			} else {
-				let nameIndex = this.world.db.getData('/nameindex');
-				this.world.db.push('/nameindex', nameIndex + 1);
-				this.label = names[nameIndex];
+				let nameIndex = Math.floor(Math.random()*(names.length - 1)); //randomly generate index
+				this.label = names[nameIndex]; //update label; duplicates *could* occur
 				await this.exec(`os.setComputerLabel("${this.label}")`);
 			}
 			this.id = await this.exec<number>('os.getComputerID()');
-			[this.x, this.y, this.z, this.d] = this.world.getTurtle(this);
+			const turtInf:TurtleInfo = this.manager.getTurtle(this);
+			if(turtInf == null){
+				this.x = 0;
+				this.y = 0;
+				this.z = 0;
+				this.d = 0;
+			}
+			else{
+				this.x = turtInf.x;
+				this.y = turtInf.y;
+				this.z = turtInf.z;
+				this.d = turtInf.direction;
+				this.dimID = turtInf.dimension;
+				this.chunkID = turtInf.chunk;
+			}
+			
+			
 			this.selectedSlot = await this.exec<number>('turtle.getSelectedSlot()');
 			this.maxFuel = await this.exec<number>('turtle.getFuelLimit()');
 			this.fuel = await this.exec<number>('turtle.getFuelLevel()');
@@ -84,6 +96,8 @@ export class Turtle extends EventEmitter {
 			y: this.y,
 			z: this.z,
 			d: this.d,
+			dimID: this.dimID,
+			chunkId:this.chunkID,
 			fuel: this.fuel,
 			maxFuel: this.maxFuel,
 			id: this.id,
@@ -219,7 +233,7 @@ export class Turtle extends EventEmitter {
 				this.d %= 4;
 				break;
 		}
-		this.world.updateTurtle(this, this.x, this.y, this.z, this.d);
+		this.manager.updateTurtleDB(this,this.dimID, this.x, this.y, this.z, this.d);
 		await this.updateBlock();
 		this.emit('update');
 	}
@@ -227,9 +241,9 @@ export class Turtle extends EventEmitter {
 	private async updateBlock() {
 		let deltas = this.getDirectionDelta(this.d);
 		let { forward, up, down } = await this.exec<{ forward: any, up: any, down: any }>('{down=select(2,turtle.inspectDown()), up=select(2,turtle.inspectUp()), forward=select(2,turtle.inspect())}');
-		this.world.updateBlock(this.x, this.y - 1, this.z, down);
-		this.world.updateBlock(this.x, this.y + 1, this.z, up);
-		this.world.updateBlock(this.x + deltas[0], this.y, this.z + deltas[1], forward);
+		this.manager.updateBlock(this.dimID, this.x, this.y - 1, this.z, down);
+		this.manager.updateBlock(this.dimID, this.x, this.y + 1, this.z, up);
+		this.manager.updateBlock(this.dimID, this.x + deltas[0], this.y, this.z + deltas[1], forward);
 	}
 
 	async dig(direction: BlockDirection) {
@@ -317,7 +331,8 @@ export class Turtle extends EventEmitter {
 					if (res.nonce === nonce) {
 						if (res !== null) {
 							let deltas = this.getDirectionDelta(this.d);
-							this.world.db.push(`/turtles/${res.data}`, [this.x + deltas[0], this.y + 1, this.z + deltas[1], this.d]);
+							
+							this.manager.updateTurtleDB(res.data, this.dimID, this.x + deltas[0], this.y + 1, this.z + deltas[1], this.d);
 						}
 						await this.updateInventory();
 						await this.updateBlock();
@@ -372,34 +387,34 @@ export class Turtle extends EventEmitter {
 								clearBlock = true;
 							}
 							if (clearBlock) {
-								this.world.updateBlock(this.x, this.y, this.z, 'No block to inspect');
+								this.manager.updateBlock(this.dimID, this.x, this.y, this.z, 'No block to inspect');
 							}
-							this.world.updateTurtle(this, this.x, this.y, this.z, this.d);
+							this.manager.updateTurtleDB(this, this.dimID, this.x, this.y, this.z, this.d);
 						}
 						if (res.blocks) {
 							if (direction === 'forward') {
 								if (res.blocks[0])
-									this.world.updateBlock(this.x, this.y - 1, this.z, res.blocks[0]);
+									this.manager.updateBlock(this.dimID, this.x, this.y - 1, this.z, res.blocks[0]);
 								if (res.blocks[1])
-									this.world.updateBlock(this.x, this.y + 1, this.z, res.blocks[1]);
+									this.manager.updateBlock(this.dimID, this.x, this.y + 1, this.z, res.blocks[1]);
 								let leftDeltas = this.getDirectionDelta((this.d + 3) % 4);
 								let rightDeltas = this.getDirectionDelta((this.d + 1) % 4);
 								if (res.blocks[2])
-									this.world.updateBlock(this.x + leftDeltas[0], this.y, this.z + leftDeltas[1], res.blocks[2]);
+									this.manager.updateBlock(this.dimID, this.x + leftDeltas[0], this.y, this.z + leftDeltas[1], res.blocks[2]);
 								if (res.blocks[3])
-									this.world.updateBlock(this.x + rightDeltas[0], this.y, this.z + rightDeltas[1], res.blocks[3]);
+									this.manager.updateBlock(this.dimID, this.x + rightDeltas[0], this.y, this.z + rightDeltas[1], res.blocks[3]);
 							} else {
 								let forwardDeltas = this.getDirectionDelta(this.d);
 								let leftDeltas = this.getDirectionDelta((this.d + 3) % 4);
 								let rightDeltas = this.getDirectionDelta((this.d + 1) % 4);
 								if (res.blocks[0])
-									this.world.updateBlock(this.x + leftDeltas[0], this.y, this.z + leftDeltas[1], res.blocks[0]);
+									this.manager.updateBlock(this.dimID, this.x + leftDeltas[0], this.y, this.z + leftDeltas[1], res.blocks[0]);
 								if (res.blocks[1])
-									this.world.updateBlock(this.x - forwardDeltas[0], this.y, this.z - forwardDeltas[1], res.blocks[1]);
+									this.manager.updateBlock(this.dimID, this.x - forwardDeltas[0], this.y, this.z - forwardDeltas[1], res.blocks[1]);
 								if (res.blocks[2])
-									this.world.updateBlock(this.x + rightDeltas[0], this.y, this.z + rightDeltas[1], res.blocks[2]);
+									this.manager.updateBlock(this.dimID, this.x + rightDeltas[0], this.y, this.z + rightDeltas[1], res.blocks[2]);
 								if (res.blocks[3])
-									this.world.updateBlock(this.x + forwardDeltas[0], this.y, this.z + forwardDeltas[1], res.blocks[3]);
+									this.manager.updateBlock(this.dimID, this.x + forwardDeltas[0], this.y, this.z + forwardDeltas[1], res.blocks[3]);
 							}
 						}
 						this.emit('update');

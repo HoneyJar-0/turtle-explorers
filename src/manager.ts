@@ -1,7 +1,7 @@
 import { JsonDB, Config } from 'node-json-db';
 import { EventEmitter } from 'events';
 import { Direction, Turtle } from './turtle';
-import { turtleInfo } from './types';
+import { TurtleInfo } from './types';
 import * as conf from './resources/config.json'
 
 export class Manager extends EventEmitter{
@@ -31,17 +31,37 @@ export class Manager extends EventEmitter{
      * @param z z coordinate
      * @param d direction the turtle is facing. One of [NORTH, SOUTH, EAST, WEST]
      */
-    public updateTurtleDB(turtle: Turtle, dimID:string, chunkID:string, x: number, y: number, z: number, d: Direction) {
-        const turtleInfo:turtleInfo = {
-            name: turtle.label,
-            dimension: dimID,
-            chunk: chunkID,
-            x: x,
-            y: y,
-            z: z,
-            direction: d
+    public updateTurtleDB(turtID:string, dimID:string, x: number, y: number, z: number, d: Direction):void;
+    public updateTurtleDB(turtle:Turtle, dimID:string, x: number, y: number, z: number, d: Direction):void;
+    public updateTurtleDB(turtleOrID: Turtle|string, dimID:string, x: number, y: number, z: number, d: Direction):void {
+        
+        const chunkID = this.getChunkID(x,z);
+
+        if(typeof turtleOrID === "string"){
+            const turtleInfo:TurtleInfo = {
+                name: "",
+                dimension: dimID,
+                chunk: chunkID,
+                x: x,
+                y: y,
+                z: z,
+                direction: d
+            }
+            this.turtleDB.push(`/turtles/${turtleOrID}`, turtleInfo); //!!! OVERWRITES
         }
-		this.turtleDB.push(`/turtles/${turtle.id}`, turtleInfo); //!!! OVERWRITES
+        else{
+            const turtleInfo:TurtleInfo = {
+                name: turtleOrID.label,
+                dimension: dimID,
+                chunk: chunkID,
+                x: x,
+                y: y,
+                z: z,
+                direction: d
+            }
+            this.turtleDB.push(`/turtles/${turtleOrID.id}`, turtleInfo); //!!! OVERWRITES
+        }
+        
 	}
 
     /**

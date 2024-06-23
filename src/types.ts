@@ -10,7 +10,7 @@ export type Metadata = {
     tags: String;
 }
 
-export type turtleInfo = {
+export type TurtleInfo = null | {
     name: string,
     dimension: string,
     chunk: string,
